@@ -19,11 +19,13 @@ import Sound from 'react-native-sound';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 
+
 function App() {
   const [text, onChangeText] = useState('');
   const [deviceToken, setDeviceToken] = useState('');
   const [registerState, setRegisterState] = useState(false);
   const [animationDone, setAnimationDone] = useState(false); // New state
+  const [session , setSession] = useState('');
 
   useEffect(() => {
     const requestNotificationPermission = async () => {
@@ -44,31 +46,50 @@ function App() {
 
 
   const checkDeviceConnection = async () => {
+    console.log(deviceToken)
     try {
-      const response = await axios.post("/check-device", {
+      const response = await axios.post("https://konect-backend.onrender.com/check-device", {
         deviceToken: deviceToken,
       });
   
       if (response.data.connected) {
         setRegisterState(true);
         setAnimationDone(true);
+        setSession(response.data.sessionCodes[0]);
       } else {
         setRegisterState(false);
       }
     } catch (error) {
-      console.error("Error checking connection:", error);
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        console.error("Error checking connection:", error.response.data);
+        console.error("Status Code:", error.response.status);
+        console.error("Headers:", error.response.headers);
+      } else if (error.request) {
+        // No response received
+        console.error("No response from backend:", error.request);
+      } else {
+        // Other errors
+        console.error("Error:", error.message);
+      }
     }
   };
+  
+  
 
   useEffect(() => {
     requestUserPermission();
-    getToken().then(() => {
-      checkDeviceConnection(); // Call the function after setting device token
-    });
+    getToken(); // This will set the deviceToken state when completed
+  }, []);
+
+  useEffect(() => {
+    if (deviceToken) {
+      checkDeviceConnection(); // Ensures deviceToken is available before making the request
+    }
   }, [deviceToken]);
 
   const playRingtone = () => {
-    const ringtone = new Sound('sound.mp3', Sound.MAIN_BUNDLE, (error) => {
+    const ringtone = new Sound('sound_2.mp3', Sound.MAIN_BUNDLE, (error) => {
       if (error) {
         console.log("Failed to load the ringtone", error);
         return;
@@ -140,12 +161,13 @@ function App() {
 
   const handleConnect = async () => {
     try {
-      const response = await axios.post('/register', {
+      const response = await axios.post('https://konect-backend.onrender.com/register', {
         sessionCode: text,
         deviceToken: deviceToken,
       });
       console.log('Response:', response.data);
       setRegisterState(true);
+      setSession(text);
     } catch (error) {
       console.error('Error connecting:', error);
     }
@@ -156,9 +178,9 @@ function App() {
   
     try {
       const response = await axios.post(
-        "/trigger-alert",
+        "https://konect-backend.onrender.com/trigger-alert",
         {
-          sessionCode: text,
+          sessionCode: session,
           senderToken: deviceToken,
         },
         {
@@ -195,7 +217,7 @@ function App() {
           text: "Disconnect",
           onPress: async () => {
             try {
-              await axios.post("/remove-device", {
+              await axios.post("https://konect-backend.onrender.com/remove-device", {
                 deviceToken: deviceToken,
               });
   
@@ -234,10 +256,7 @@ function App() {
     setDeviceToken(token);
   };
 
-  useEffect(() => {
-    requestUserPermission();
-    getToken();
-  }, []);
+
 
   return (
     <KeyboardAvoidingView

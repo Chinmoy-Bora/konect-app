@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "490907964484",
+    "project_id": "konect-fc23b",
+    "storage_bucket": "konect-fc23b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:490907964484:android:b50d4e12c86c0333f4d811",
+        "android_client_info": {
+          "package_name": "com.konect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBeDdvGbQNCVTK9xnVmiyiQBhZLIKuQK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
